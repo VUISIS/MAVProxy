@@ -1,0 +1,162 @@
+domain Mission {
+  // (x,y) location of the drone
+  Loc ::= new (x : Real, y : Real).
+  // each mission item involves moving from source to destination locs at given velocity
+  MissionItem ::= new (label : String, src : Loc, dest : Loc, dist : Real, vel : Real).
+  // each mission is a list of mission items
+  Mission ::= new (m : MissionItem, remainder : any Mission + {NIL}).
+  // duration to complete the task with the given name 
+  itemDuration ::= (String, Real).
+
+  itemDuration(name, t) :- MissionItem(name, _, _, dist, vel), t = dist/vel.
+}
+
+domain Hardware {
+  Component ::= new (label : String, weight : Real).  
+}
+
+domain Battery includes Hardware {
+  Battery ::= new (label : String, weight : Real, capacity : Real).
+  // energy consumption rate	   
+  rate ::= (Real).  
+  // total battery capacity
+  batteryCapacity ::= (Real).
+
+  rate(r) :- x = sum(0, {cw | cw = w*(9.8), Component(_, w)}),
+	     r = (x + bw*9.8)/(3*0.7), Battery(_, bw, _).
+  batteryCapacity(c) :- c = sum(0, {bc | Battery(_, _, bc)}).
+}
+
+domain BatteryChecker includes Battery, Mission {
+  // amount of energy consumed to carry out the mission with given name
+  missionConsumption ::= (String, Real).
+  batteryExceeded ::= (String, Real, Real).
+  
+  missionConsumption(name, c) :- Mission(MissionItem(name, _, _, _, _),
+  			      		Mission(MissionItem(name2, _, _, _, _), _)),
+  		     		itemDuration(name, t1),
+				missionConsumption(name2, c2),
+				rate(r), 
+				c = t1*r + c2.
+
+  missionConsumption(name, c) :- Mission(MissionItem(name, _, _, _, _), NIL),
+  			      itemDuration(name, t),
+			      rate(r),
+			      c = t*r.
+
+  batteryExceeded(missionName, consumed, available) :-
+  			       missionConsumption(missionName, consumed),
+			       batteryCapacity(available),
+			       consumed > available.
+
+  requiredCapacity ::= (Real).
+  invalidBattery ::= (Real).
+
+  requiredCapacity(x) :- x = sum(0, {mc | missionConsumption(_, mc)}), bc is batteryCapacity(amt), x < amt.
+  invalidBattery(x) :- x = sum(0, {mc | missionConsumption(_, mc)}), x < 300000.0.
+
+
+  conforms no batteryExceeded(n, c, a).
+  conforms requiredCapacity(x).
+  conforms invalidBattery(x).
+}
+
+model invalidBatteryModel of BatteryChecker {
+  Component("payload1", 15).
+  Component("body", 20).
+  Battery("battery1", 10, 15000.0).
+
+  Loc(696719.878578734, 6084519.461942742).
+  Loc(696667.9095079647, 6084604.057664893).
+  Loc(696461.285074487, 6084542.540980599).
+  Loc(696483.865733316, 6084831.1559089795).
+  Loc(696768.2301751517, 6084838.698833538).
+  Loc(697066.0425451219, 6084833.397040574).
+  Loc(697067.0682028508, 6084253.934338238).
+  Loc(696721.1507325936, 6084519.434105268).
+
+  t1 is MissionItem("task1", Loc(696719.878578734, 6084519.461942742), Loc(696667.9095079647, 6084604.057664893), 99.28, 20.0).
+  t2 is MissionItem("task2", Loc(696667.9095079647, 6084604.057664893), Loc(696461.285074487, 6084542.540980599), 215.59, 20.0).
+  t3 is MissionItem("task3", Loc(696461.285074487, 6084542.540980599), Loc(696483.865733316, 6084831.1559089795), 289.50, 20.0).	
+  t4 is MissionItem("task4", Loc(696483.865733316, 6084831.1559089795), Loc(696768.2301751517, 6084838.698833538), 284.46, 20.0).	
+  t5 is MissionItem("task5", Loc(696768.2301751517, 6084838.698833538), Loc(697066.0425451219, 6084833.397040574), 297.86, 20.0).	
+  t6 is MissionItem("task6", Loc(697066.0425451219, 6084833.397040574), Loc(697067.0682028508, 6084253.934338238), 579.46, 20.0).	
+  t7 is MissionItem("task7", Loc(697067.0682028508, 6084253.934338238), Loc(696721.1507325936, 6084519.434105268), 436.06, 20.0).	
+  t8 is MissionItem("task8", Loc(696721.1507325936, 6084519.434105268), Loc(696719.878578734, 6084519.461942742), 1.27, 20.0).		
+  t9 is MissionItem("task9", Loc(696719.878578734, 6084519.461942742), Loc(696667.9095079647, 6084604.057664893), 99.28, 20.0).
+  t10 is MissionItem("task10", Loc(696667.9095079647, 6084604.057664893), Loc(696461.285074487, 6084542.540980599), 215.59, 20.0).
+  t11 is MissionItem("task11", Loc(696461.285074487, 6084542.540980599), Loc(696483.865733316, 6084831.1559089795), 289.50, 20.0).	
+  t12 is MissionItem("task12", Loc(696483.865733316, 6084831.1559089795), Loc(696768.2301751517, 6084838.698833538), 284.46, 20.0).	
+  t13 is MissionItem("task13", Loc(696768.2301751517, 6084838.698833538), Loc(697066.0425451219, 6084833.397040574), 297.86, 20.0).	
+  t14 is MissionItem("task14", Loc(697066.0425451219, 6084833.397040574), Loc(697067.0682028508, 6084253.934338238), 579.46, 20.0).	
+  t15 is MissionItem("task15", Loc(697067.0682028508, 6084253.934338238), Loc(696721.1507325936, 6084519.434105268), 436.06, 20.0).	
+  t16 is MissionItem("task16", Loc(696721.1507325936, 6084519.434105268), Loc(696719.878578734, 6084519.461942742), 1.27, 20.0).	
+
+  m16 is Mission(t16, NIL).
+  m15 is Mission(t15, m16).
+  m14 is Mission(t14, m15).
+  m13 is Mission(t13, m14).
+  m12 is Mission(t12, m13).
+  m11 is Mission(t11, m12).
+  m10 is Mission(t10, m11).
+  m9 is Mission(t9, m10).
+  m8 is Mission(t8, m9).
+  m7 is Mission(t7, m8).
+  m6 is Mission(t6, m7).
+  m5 is Mission(t5, m6).
+  m4 is Mission(t4, m5).
+  m3 is Mission(t3, m4).
+  m2 is Mission(t2, m3).
+  m1 is Mission(t1, m2).
+}
+
+partial model invalidBatteryPartialModel of BatteryChecker
+[solver_RecursionBound = 200]
+{
+  Component("payload1", 15).
+  Component("body", 20).
+  Battery("battery1", 10, x).
+
+  Loc(696719.878578734, 6084519.461942742).
+  Loc(696667.9095079647, 6084604.057664893).
+  Loc(696461.285074487, 6084542.540980599).
+  Loc(696483.865733316, 6084831.1559089795).
+  Loc(696768.2301751517, 6084838.698833538).
+  Loc(697066.0425451219, 6084833.397040574).
+  Loc(697067.0682028508, 6084253.934338238).
+  Loc(696721.1507325936, 6084519.434105268).
+
+  t1 is MissionItem("task1", Loc(696719.878578734, 6084519.461942742), Loc(696667.9095079647, 6084604.057664893), 99.28, 20.0).
+  t2 is MissionItem("task2", Loc(696667.9095079647, 6084604.057664893), Loc(696461.285074487, 6084542.540980599), 215.59, 20.0).
+  t3 is MissionItem("task3", Loc(696461.285074487, 6084542.540980599), Loc(696483.865733316, 6084831.1559089795), 289.50, 20.0).	
+  t4 is MissionItem("task4", Loc(696483.865733316, 6084831.1559089795), Loc(696768.2301751517, 6084838.698833538), 284.46, 20.0).	
+  t5 is MissionItem("task5", Loc(696768.2301751517, 6084838.698833538), Loc(697066.0425451219, 6084833.397040574), 297.86, 20.0).	
+  t6 is MissionItem("task6", Loc(697066.0425451219, 6084833.397040574), Loc(697067.0682028508, 6084253.934338238), 579.46, 20.0).	
+  t7 is MissionItem("task7", Loc(697067.0682028508, 6084253.934338238), Loc(696721.1507325936, 6084519.434105268), 436.06, 20.0).	
+  t8 is MissionItem("task8", Loc(696721.1507325936, 6084519.434105268), Loc(696719.878578734, 6084519.461942742), 1.27, 20.0).		
+  t9 is MissionItem("task9", Loc(696719.878578734, 6084519.461942742), Loc(696667.9095079647, 6084604.057664893), 99.28, 20.0).
+  t10 is MissionItem("task10", Loc(696667.9095079647, 6084604.057664893), Loc(696461.285074487, 6084542.540980599), 215.59, 20.0).
+  t11 is MissionItem("task11", Loc(696461.285074487, 6084542.540980599), Loc(696483.865733316, 6084831.1559089795), 289.50, 20.0).	
+  t12 is MissionItem("task12", Loc(696483.865733316, 6084831.1559089795), Loc(696768.2301751517, 6084838.698833538), 284.46, 20.0).	
+  t13 is MissionItem("task13", Loc(696768.2301751517, 6084838.698833538), Loc(697066.0425451219, 6084833.397040574), 297.86, 20.0).	
+  t14 is MissionItem("task14", Loc(697066.0425451219, 6084833.397040574), Loc(697067.0682028508, 6084253.934338238), 579.46, 20.0).	
+  t15 is MissionItem("task15", Loc(697067.0682028508, 6084253.934338238), Loc(696721.1507325936, 6084519.434105268), 436.06, 20.0).	
+  t16 is MissionItem("task16", Loc(696721.1507325936, 6084519.434105268), Loc(696719.878578734, 6084519.461942742), 1.27, 20.0).	
+
+  m16 is Mission(t16, NIL).
+  m15 is Mission(t15, m16).
+  m14 is Mission(t14, m15).
+  m13 is Mission(t13, m14).
+  m12 is Mission(t12, m13).
+  m11 is Mission(t11, m12).
+  m10 is Mission(t10, m11).
+  m9 is Mission(t9, m10).
+  m8 is Mission(t8, m9).
+  m7 is Mission(t7, m8).
+  m6 is Mission(t6, m7).
+  m5 is Mission(t5, m6).
+  m4 is Mission(t4, m5).
+  m3 is Mission(t3, m4).
+  m2 is Mission(t2, m3).
+  m1 is Mission(t1, m2).
+}
