@@ -1,28 +1,24 @@
-![GitHub Actions](https://github.com/ardupilot/MAVProxy/actions/workflows/windows_build.yml/badge.svg)
+## Set OpenAI Env
+```
+Set the environment variable OPENAI_API_KEY before running.
+```
 
-MAVProxy
+## Create conda environment
+```bash
+$ conda create -n mp python=3.10
+$ conda activate mp
 
-This is a MAVLink ground station written in python. 
+// Run from MAVProxy folder.
+$ pip3 install .
+```
 
-Please see https://ardupilot.org/mavproxy/index.html for more information
+## Install Formula
+```bash
+$ dotnet tool install --global VUISIS.Formula.<x64|ARM64> 
+```
 
-This ground station was developed as part of the CanberraUAV OBC team
-entry
-
-License
--------
-
-MAVProxy is released under the GNU General Public License v3 or later
-
-
-Maintainers
------------
-
-The best way to discuss MAVProxy with the maintainers is to join the
-mavproxy channel on ArduPilot discord at https://ardupilot.org/discord
-
-Lead Developers: Andrew Tridgell and Peter Barker
-
-Windows Maintainer: Stephen Dade
-
-MacOS Maintainer: Rhys Mainwaring
+## Battery Demo Commands
+```bash
+$ batdemo invalid
+$ batdemo repair
+```
