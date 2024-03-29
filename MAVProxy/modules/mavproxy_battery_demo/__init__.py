@@ -14,6 +14,10 @@ load("coreclr")
 import clr
 
 formula_dll = os.environ.get("FORMULA_DLL_PATH", False)
+data_path = os.environ.get("MAVPROXY_DATA_PATH", False)
+
+if data_path == False:
+    raise ValueError('MAVPROXY_DATA_PATH envionment variable not set.')
 
 if formula_dll != False:
     clr.AddReference(formula_dll)
@@ -40,7 +44,7 @@ class BatteryDemoModule(mp_module.MPModule):
         self.print_period = mavutil.periodic_event(0.25)
         self.explain_prompt = "Given the following Formula DSL program modeling a physical drone, explain what the invalidBatteryPartialModel partial model is modeling. Give a detailed list of solutions, such as reducing payload weights, that can be made to the partial model invalidBatteryPartialModel to fix the partial model so that the drone has a high enough battery capacity to fly."
         self.repair_prompt = "Repair the invalidBatteryPartialModel by reducing the payload1 and body component weights so that the sum of the missionConsumptions will be below the batteryCapacity. Do not shorten or comment that the code remains the same in the edited code."
-        self.save_file = "./data/IBC_Repaired.4ml"
+        self.save_file = data_path + "/IBC_Repaired.4ml"
         self.sw = StringWriter()
         Console.SetOut(self.sw)
         Console.SetError(self.sw)
@@ -70,15 +74,15 @@ class BatteryDemoModule(mp_module.MPModule):
         file = ""
         code = ""
         if args[0] == 'repair':
-            file = './data/InvalidBatteryChecker.4ml'  
+            file = data_path + "/InvalidBatteryChecker.4ml"  
             code = ""
             with open(file, 'r') as f:
                 code = f.read()
             output = "Model is not solvable."
             run_agent_executor_repair(code, output, self.repair_prompt)
-            file = "./data/valid.4ml"
+            file = data_path + "/valid.4ml"
         elif args[0] == 'invalid':
-            file = './data/InvalidBatteryChecker.4ml'  
+            file = data_path + "/InvalidBatteryChecker.4ml"  
             with open(file, 'r') as f:
                 code = f.read()
 
@@ -92,7 +96,7 @@ class BatteryDemoModule(mp_module.MPModule):
         
         mission = ""
         if args[0] == 'repair':
-            mission = './data/ValidMission.txt'
+            mission = data_path + "/ValidMission.txt"
             if not self.ci.DoCommand('solve invalidBatteryPartialModel 1 BatteryChecker.conforms'):
                 print("Solve command failed.")
                 return
