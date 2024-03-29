@@ -10,7 +10,8 @@ def package_files(directory):
             paths.append(os.path.join('..', path, filename))
     return paths
 
-package_data = ['modules/mavproxy_map/data/*.jpg', 
+package_data = ['modules/mavproxy_battery_demo/*',
+                'modules/mavproxy_map/data/*.jpg', 
                 'modules/mavproxy_map/data/*.png',
                 'modules/mavproxy_mmap/mmap_app/*',
                 'modules/mavproxy_joystick/joysticks/*.yml',
@@ -28,7 +29,12 @@ package_data.extend(package_files('MAVProxy/modules/mavproxy_cesium/app'))
 # large numbers of modules like numpy etc which may be already installed
 requirements=['pymavlink>=2.4.14',
               'pyserial>=3.0',
-              'numpy']
+              'numpy',
+              'pexpect',
+              'empy==3.3.4',
+              'langchain',
+              'openai',
+              'pythonnet']
 
 if platform.system() == "Darwin":
     # on MacOS we can have a more complete requirements list
@@ -75,6 +81,7 @@ on how to use MAVProxy.''',
       license='GPLv3',
       packages=['MAVProxy',
                 'MAVProxy.modules',
+                'MAVProxy.modules.mavproxy_battery_demo',
                 'MAVProxy.modules.mavproxy_fieldcheck',
                 'MAVProxy.modules.mavproxy_map',
                 'MAVProxy.modules.mavproxy_mmap',
